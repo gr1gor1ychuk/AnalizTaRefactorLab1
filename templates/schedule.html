@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Розклад занять</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <h2 style="text-align: center; font-size: 36px;">SCHEDULE</h2>
+
+    <label for="group-selector">Select Academic Group:</label>
+    <select id="group-selector">
+        <option value="">All Groups</option>
+        <option value="">FEP-21</option>
+        <option value="">FEP-23</option>
+        <!-- Додайте інші опції за потреби -->
+    </select>
+
+    <table id="schedule-table">
+        <thead>
+            <tr>
+                <th>Teacher</th>
+                <th>Academic Group</th>
+                <th>Subject</th>
+                <th>Day</th>
+                <th>Class Order</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for lesson in lessons %}
+                <tr>
+                    <td>{{ lesson.teacher }}</td>
+                    <td>{{ lesson.academic_group }}</td>
+                    <td>{{ lesson.subject }}</td>
+                    <td>{{ lesson.day }}</td>
+                    <td>{{ lesson.class_order }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <button id="back-button">Назад</button>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var cells = document.querySelectorAll('td');
+        var backButton = document.getElementById('back-button');
+        var groupSelector = document.getElementById('group-selector');
+
+        backButton.addEventListener('click', function () {
+            getLessonsBySchedule();
+        });
+
+        groupSelector.addEventListener('change', function () {
+            var selectedGroup = groupSelector.value;
+            getLessonsByGroup(selectedGroup);
+        });
+
+        // Додайте інші події та функції за необхідності
+
+        // Змініть розмір шрифту для заголовка таблиці
+        document.getElementById('schedule-table').style.fontSize = '18px';
+
+        // Додайте стилі для таблиці
+        document.getElementById('schedule-table').style.marginTop = '20px';
+        document.getElementById('schedule-table').style.marginBottom = '20px';
+
+        // Додайте стилі для кнопки "Назад"
+        backButton.style.fontSize = '16px';
+
+        // Додайте стилі для селектора груп
+        groupSelector.style.fontSize = '16px';
+
+        cells.forEach(function (cell) {
+            cell.addEventListener('click', function () {
+                var teacherName = cell.parentNode.cells[0].textContent.trim();
+                getLessonsByTeacher(teacherName);
+            });
+        });
+
+        function getLessonsByTeacher(teacherName) {
+            fetch(`/lessons/teacher/${teacherName}`)
+                .then(response => response.json())
+                .then(data => displayLessons(data));
+        }
+
+        function getLessonsByGroup(academicGroup) {
+            fetch(`/lessons/academic-group/${academicGroup}`)
+                .then(response => response.json())
+                .then(data => displayLessons(data));
+        }
+
+        function getLessonsBySchedule() {
+            fetch(`/lessons`)
+                .then(response => response.json())
+                .then(data => displayLessons(data));
+        }
+
+        function displayLessons(data) {
+            var tableBody = document.querySelector('tbody');
+            tableBody.innerHTML = '';
+
+            data.forEach(function (lesson) {
+                var row = tableBody.insertRow();
+                var cell1 = row.insertCell(0);
+                var cell2 = row.insertCell(1);
+                var cell3 = row.insertCell(2);
+                var cell4 = row.insertCell(3);
+                var cell5 = row.insertCell(4);
+
+                cell1.innerHTML = lesson.teacher;
+                cell2.innerHTML = lesson.academic_group;
+                cell3.innerHTML = lesson.subject;
+                cell4.innerHTML = lesson.day;
+                cell5.innerHTML = lesson.class_order;
+            });
+        }
+    });
+</script>
+
+</body>
+</html>
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 100vh;
+    }
+
+    h2 {
+        color: #333;
+    }
+
+    label {
+        font-size: 16px;
+        margin-top: 10px;
+    }
+
+    select {
+        font-size: 16px;
+        margin-bottom: 20px;
+    }
+
+    table {
+        font-family: 'Arial', sans-serif;
+        border-collapse: collapse;
+        width: 80%;
+        background-color: #fff;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 12px;
+        text-align: left;
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+
+    tr:hover {
+        background-color: #e9cf47;
+    }
+
+    @media only screen and (max-width: 768px) {
+        table {
+            width: 100%;
+        }
+    }
+
+    button {
+        margin-top: 10px;
+        padding: 8px 16px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    button:hover {
+        background-color: #45a049;
+    }
+</style>

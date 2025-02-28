@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lessons App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        button {
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        #lessons-container {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        .info-button {
+            background-color: #008CBA;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .info-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            background-color: #f1f1f1;
+            z-index: 2;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .delete-button {
+            padding: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #ff5252; /* Червоний колір, аналогічний до Show Info */
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .edit-button {
+            padding: 5px;
+            font-size: 20px;
+            cursor: pointer;
+            background-color: #0B4C5F;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .delete-icon {
+            color: white;
+            font-size: 20px; /* Регулюйте розмір відповідно до ваших потреб */
+            line-height: 20px;
+        }
+
+        .dark-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1;
+        }
+
+        #add-lesson-form {
+            display: none;
+            margin-top: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+                /* Модальне вікно */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            background-color: #f1f1f1;
+            z-index: 2;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-content {
+            position: relative;
+            margin: 15% auto;
+            padding: 20px;
+            background-color: #fefefe;
+            border: 1px solid #888;
+            width: 80%;
+        }
+
+        /* Затемнення ззаду */
+        .dark-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1;
+        }
+
+    </style>
+</head>
+<body>
+
+<h1>Lessons App</h1>
+
+<button onclick="getLessons()">Get All Lessons</button>
+<button onclick="getTeacherLessons()">Get Lessons by Teacher</button>
+<button onclick="getGroupLessons()">Get Lessons by Academic Group</button>
+<button onclick="toggleAddLessonModal()">Add Lesson</button>
+
+<div id="lessons-container"></div>
+<div id="editMessage"></div>
+
+<div id="editLessonModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeEditModal()">&times;</span>
+        <h2>Edit Lesson</h2>
+        <form id="editLessonForm" onsubmit="submitEditForm(); return false;">
+            <label for="edit-teacher">Teacher:</label>
+            <input type="text" id="edit-teacher" required>
+
+            <label for="edit-academic-group">Academic Group:</label>
+            <input type="text" id="edit-academic-group" required>
+
+            <label for="edit-subject">Subject:</label>
+            <input type="text" id="edit-subject" required>
+
+            <label for="edit-day">Day:</label>
+            <input type="text" id="edit-day" required>
+
+            <label for="edit-class-order">Class Order:</label>
+            <input type="number" id="edit-class-order" required>
+
+            <button type="submit">Save Changes</button>
+        </form>
+    </div>
+</div>
+
+
+<!-- Add Lesson Modal -->
+<div id="addLessonModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeAddModal()">&times;</span>
+        <h2>Add Lesson</h2>
+        <form onsubmit="submitAddForm(); return false;">
+            <label for="add-teacher">Teacher:</label>
+            <input type="text" id="add-teacher" required>
+
+            <label for="add-academic-group">Academic Group:</label>
+            <input type="text" id="add-academic-group" required>
+
+            <label for="add-subject">Subject:</label>
+            <input type="text" id="add-subject" required>
+
+            <label for="add-day">Day:</label>
+            <input type="text" id="add-day" required>
+
+            <label for="add-class-order">Class Order:</label>
+            <input type="number" id="add-class-order" required>
+
+            <button type="submit">Add Lesson</button>
+        </form>
+    </div>
+</div>
+
+
+<!-- Info Popup -->
+<div class="info-popup" id="infoPopup">
+    <h2 id="groupInfoTitle"></h2>
+    <p id="groupInfoContent"></p>
+</div>
+
+<!-- Dark Overlay -->
+<div class="dark-overlay" id="darkOverlay" onclick="closeEditModal(); closeInfoPopup(); closeAddModal()"></div>
+
+<script>
+    const BASE_URL = 'http://localhost:5000';
+
+    function getLessons() {
+        fetchData('/lessons');
+    }
+
+    function getTeacherLessons() {
+        const teacherName = prompt('Enter teacher name:');
+        if (teacherName) {
+            fetchData(`/lessons/teacher/${teacherName}`);
+        }
+    }
+
+    function getGroupLessons() {
+        const academicGroup = prompt('Enter academic group:');
+        if (academicGroup) {
+            fetchData(`/lessons/academic-group/${academicGroup}`);
+        }
+    }
+
+    function toggleAddLessonModal() {
+        const addLessonModal = document.getElementById('addLessonModal');
+        const darkOverlay = document.getElementById('darkOverlay');
+
+        addLessonModal.style.display = 'block';
+        darkOverlay.style.display = 'block';
+    }
+
+    function closeAddModal() {
+        const addLessonModal = document.getElementById('addLessonModal');
+        const darkOverlay = document.getElementById('darkOverlay');
+
+        addLessonModal.style.display = 'none';
+        darkOverlay.style.display = 'none';
+    }
+
+    function submitAddForm() {
+        const teacher = document.getElementById('add-teacher').value;
+        const academicGroup = document.getElementById('add-academic-group').value;
+        const subject = document.getElementById('add-subject').value;
+        const day = document.getElementById('add-day').value;
+        const classOrder = document.getElementById('add-class-order').value;
+
+        fetch(`${BASE_URL}/lessons/add`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `teacher=${teacher}&academic_group=${academicGroup}&subject=${subject}&day=${day}&class_order=${classOrder}`,
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            document.getElementById('add-teacher').value = '';
+            document.getElementById('add-academic-group').value = '';
+            document.getElementById('add-subject').value = '';
+            document.getElementById('add-day').value = '';
+            document.getElementById('add-class-order').value = '';
+            closeAddModal();
+        })
+        .catch(error => {
+            console.error('Error adding lesson:', error);
+            alert('An error occurred while adding the lesson.');
+        });
+    }
+
+    function fetchData(url) {
+        // Виклик функції з вашого Flask серверу
+        fetch(`${BASE_URL}${url}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Оновлення вмісту контейнера занять
+            const lessonsContainer = document.getElementById('lessons-container');
+            lessonsContainer.innerHTML = '';  // Очищення контейнера
+
+            if (data.length > 0) {
+                const table = document.createElement('table');
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Teacher</th>
+                            <th>Academic Group</th>
+                            <th>Subject</th>
+                            <th>Day</th>
+                            <th>Class Order</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.map(lesson => `
+                            <tr>
+                                <td>${lesson.teacher}</td>
+                                <td>${lesson.academic_group}
+                                    <button class="info-button" onclick="showGroupInfo('${lesson.academic_group}')">&#9432;</button>
+                                </td>
+                                <td>${lesson.subject}</td>
+                                <td>${lesson.day}</td>
+                                <td>${lesson.class_order}</td>
+                                <td>
+                                    <button class="delete-button" onclick="deleteLesson(${lesson.id})">
+                                        <span class="delete-icon">Delete</span>
+                                        <button class="edit-button" onclick="editLesson(${lesson.id}, '${lesson.teacher}', '${lesson.academic_group}', '${lesson.subject}', '${lesson.day}', ${lesson.class_order})"><span class="edit-icon">Edit</span></button>
+                                    </button>
+                                </td>
+                        `).join('')}
+                    </tbody>
+                `;
+                lessonsContainer.appendChild(table);
+            } else {
+                lessonsContainer.textContent = 'No lessons available.';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching lessons:', error);
+            const lessonsContainer = document.getElementById('lessons-container');
+            lessonsContainer.textContent = 'An error occurred while fetching lessons.';
+        });
+    }
+
+    function toggleAddLessonForm() {
+        const addLessonForm = document.getElementById('add-lesson-form');
+        // Змінює видимість форми для додавання заняття при кожному кліку на кнопку "Add Lesson"
+        addLessonForm.style.display = addLessonForm.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function showGroupInfo(groupName) {
+        // Виклик функції на Flask сервері для отримання інформації про групу
+        fetch(`${BASE_URL}/group-info/${groupName}`)
+            .then(response => response.json())
+            .then(data => {
+                const infoPopup = document.getElementById('infoPopup');
+                const darkOverlay = document.getElementById('darkOverlay');
+                const groupInfoTitle = document.getElementById('groupInfoTitle');
+                const groupInfoContent = document.getElementById('groupInfoContent');
+
+                groupInfoTitle.innerHTML = `Group Info: ${groupName}`;
+                groupInfoContent.innerHTML = `Starosta: ${data.starosta}<br>Contact Starosta: ${data.contact_starosta}`;
+
+                infoPopup.style.display = 'block';
+                darkOverlay.style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error fetching group info:', error);
+            });
+    }
+
+    function closeInfoPopup() {
+        const infoPopup = document.getElementById('infoPopup');
+        const darkOverlay = document.getElementById('darkOverlay');
+
+        infoPopup.style.display = 'none';
+        darkOverlay.style.display = 'none';
+    }
+
+    function getGroupList() {
+        fetch(`${BASE_URL}/group-list`)
+            .then(response => response.json())
+            .then(data => {
+                const groupSelect = document.getElementById('group-select');
+
+                // Очистити існуючі елементи у випадаючому списку
+                groupSelect.innerHTML = '';
+
+                // Додати нові елементи у випадаючий список
+                data.forEach(group => {
+                    const option = document.createElement('option');
+                    option.value = group.group_name;
+                    option.text = group.group_name;
+                    groupSelect.add(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching group list:', error);
+            });
+    }
+
+
+    function onGetGroupInfoClick() {
+        getGroupList();
+
+    }
+
+    function editLesson(lessonId, teacher, academicGroup, subject, day, classOrder) {
+        // Заповніть поля форми значеннями з уроку
+        document.getElementById('edit-teacher').value = teacher;
+        document.getElementById('edit-academic-group').value = academicGroup;
+        document.getElementById('edit-subject').value = subject;
+        document.getElementById('edit-day').value = day;
+        document.getElementById('edit-class-order').value = classOrder;
+        const darkOverlay = document.getElementById('darkOverlay');
+
+        // Збережіть ID уроку в атрибуті data для форми
+        document.getElementById('editLessonForm').dataset.lessonId = lessonId;
+
+        // Покажіть модальне вікно та темне
+        document.getElementById('editLessonModal').style.display = 'block';
+        darkOverlay.style.display = 'block';
+    }
+
+    function closeEditModal() {
+        const infoPopup = document.getElementById('editLessonModal');
+        const darkOverlay = document.getElementById('darkOverlay');
+
+        editLessonModal.style.display = 'none';
+        darkOverlay.style.display = 'none';
+    }
+
+    function displayEditForm(lesson) {
+        const editForm = document.getElementById('editLessonForm');
+        editForm.innerHTML = `
+            <h2>Edit Lesson</h2>
+            <form onsubmit="submitEditForm(${lesson.id}); return false;">
+                <!-- Додайте поля форми для редагування, які вам потрібні -->
+                <label for="teacher">Teacher:</label>
+                <input type="text" id="teacher" value="${lesson.teacher}" required>
+
+                <label for="academic_group">Academic Group:</label>
+                <input type="text" id="academic_group" value="${lesson.academic_group}" required>
+
+                <label for="subject">Subject:</label>
+                <input type="text" id="subject" value="${lesson.subject}" required>
+
+                <label for="day">Day:</label>
+                <input type="text" id="day" value="${lesson.day}" required>
+
+                <label for="class_order">Class Order:</label>
+                <input type="number" id="class_order" value="${lesson.class_order}" required>
+
+                <button type="submit">Save Changes</button>
+            </form>
+        `;
+    }
+
+    function submitEditForm() {
+    const lessonId = document.getElementById('editLessonForm').dataset.lessonId;
+
+    const editedLesson = {
+        teacher: document.getElementById('edit-teacher').value,
+        academic_group: document.getElementById('edit-academic-group').value,
+        subject: document.getElementById('edit-subject').value,
+        day: document.getElementById('edit-day').value,
+        class_order: document.getElementById('edit-class-order').value
+    };
+
+    fetch(`/lessons/edit/${lessonId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `teacher=${editedLesson.teacher}&academic_group=${editedLesson.academic_group}&subject=${editedLesson.subject}&day=${editedLesson.day}&class_order=${editedLesson.class_order}`,
+    })
+    .then(response => response.json())
+    .then(response => {
+        console.log('Lesson updated successfully:', response);
+        // Закрийте форму редагування або здійсніть інші дії за потребою
+        closeEditForm();
+
+        // Встановлення повідомлення про успішні зміни
+        document.getElementById('editMessage').innerHTML = 'Changes saved successfully.';
+    })
+    .catch(error => {
+        console.error('Error updating lesson:', error);
+        // Встановлення повідомлення про неуспішні зміни
+        document.getElementById('editMessage').innerHTML = 'Failed to save changes. Please try again.';
+    });
+    }
+
+
+
+    function closeEditForm() {
+        const editForm = document.getElementById('editLessonForm');
+        editForm.innerHTML = '';  // Очищення вмісту форми
+    }
+
+    function deleteLesson(lesson_id) {
+    const confirmDelete = confirm("Are you sure you want to delete this lesson?");
+    if (confirmDelete) {
+        fetch(`${BASE_URL}/lessons/delete/${lesson_id}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            getLessons(); // Оновити список занять після видалення
+        })
+        .catch(error => {
+            console.error('Error deleting lesson:', error);
+            alert('An error occurred while deleting the lesson.');
+        });
+    }
+}
+
+
+</script>
+
+</body>
+</html>

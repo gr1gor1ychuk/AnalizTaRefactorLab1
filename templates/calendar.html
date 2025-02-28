@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Schedule</title>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            padding-top: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #007bff;
+        }
+
+        #calendar {
+            display: flex;
+            justify-content: space-between;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        #date-selector {
+            border: 1px solid #ccc;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-right: 10px;
+        }
+
+        .date-option {
+            cursor: pointer;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.3s;
+        }
+
+        .date-option:hover {
+            background-color: #f0f0f0;
+        }
+
+        #schedule-container {
+            flex-grow: 1;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .day-schedule {
+            display: none;
+        }
+
+        .day-schedule.active {
+            display: block;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .dropdown-container {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Class Schedule Calendar</h1>
+
+        <div class="dropdown-container">
+            <label for="groupSelector">Select Group:</label>
+            <select class="form-control" id="groupSelector" onchange="changeGroup(this.value)">
+                <option value="">All Groups</option>
+                {% for group in groups %}
+                    <option value="{{ group.group_name }}">{{ group.group_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div id="calendar" class="mt-4">
+            <div id="date-selector">
+                {% for day in schedule_dict.keys() %}
+                    <div class="date-option" data-day="{{ day }}">{{ day }}</div>
+                {% endfor %}
+            </div>
+            <div id="schedule-container">
+                {% for day, schedule in schedule_dict.items() %}
+                    <div class="day-schedule" data-day="{{ day }}">
+                        <h2 class="mb-4">{{ day }}</h2>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Class Order</th>
+                                    <th>Teacher</th>
+                                    <th>Subject</th>
+                                    <th>Group</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% set prev_class_order = -1 %}
+                                {% for lesson in schedule %}
+                                    {% if lesson.class_order != prev_class_order %}
+                                        <tr>
+                                            <td>{{ lesson.class_order }}</td>
+                                            <td>{{ lesson.teacher }}</td>
+                                            <td>{{ lesson.subject }}</td>
+                                            <td>{{ lesson.academic_group }}</td>
+                                        </tr>
+                                    {% else %}
+                                        <td colspan="3">{{ lesson.teacher }}</td>
+                                        <td>{{ lesson.academic_group }}</td>
+                                    {% endif %}
+                                    {% set prev_class_order = lesson.class_order %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script>
+        $(document).ready(function () {
+            $(".date-option").click(function () {
+                var selectedDay = $(this).data("day");
+                $(".day-schedule").removeClass("active");
+                $(".day-schedule[data-day='" + selectedDay + "']").addClass("active");
+            });
+        });
+
+        function changeGroup(group) {
+            $(".day-schedule").removeClass("active");
+            $(".date-option").removeClass("active");
+            $("#groupSelector").val(group);
+
+            if (group) {
+                $(".day-schedule[data-day='" + $(".date-option.active").data("day") + "'][data-group='" + group + "']").addClass("active");
+            } else {
+                $(".day-schedule.active").addClass("active");
+            }
+        }
+    </script>
+</body>
+</html>

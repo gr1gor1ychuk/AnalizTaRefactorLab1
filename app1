@@ -1,0 +1,222 @@
+from flask import Flask, request, jsonify, json, render_template
+from flasgger import Swagger
+from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
+
+app = Flask(__name__)
+CORS(app)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///lessonsss.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
+
+
+class Lessons(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    teacher = db.Column(db.String(200), nullable=False)
+    academic_group = db.Column(db.String(10), nullable=False)
+    subject = db.Column(db.String(200), nullable=False)
+    day = db.Column(db.String(20), nullable=False)
+    class_order = db.Column(db.Integer, nullable=False)
+
+
+def parseToDB():
+    with app.app_context():
+        # Заповнення бази даних даними з lessons.json
+        with open("lessons.json", "r") as file:
+            lessons_data = json.load(file)
+            for lesson_info in lessons_data["lessons"]:
+                lesson = Lessons(**lesson_info)
+                db.session.add(lesson)
+
+        db.create_all()  # Замінено розміщення create_all()
+
+        db.session.commit()
+
+
+Swagger(app)
+
+
+def order_lessons(lessons):
+    return sorted(
+        lessons,
+        key=lambda lesson: (
+            {
+                'Monday': 1,
+                'Tuesday': 2,
+                'Wednesday': 3,
+                'Thursday': 4,
+                'Friday': 5,
+                'Saturday': 6,
+            }.get(lesson.day, 99),
+            lesson.class_order
+        )
+    )
+
+
+def lessons_to_dict(lessons):
+    return [{"teacher": lesson.teacher, "academic_group": lesson.academic_group,
+             "subject": lesson.subject, "day": lesson.day, "class_order": lesson.class_order}
+            for lesson in lessons]
+
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+
+@app.route('/schedule')
+def schedule():
+    ordered_lessons = order_lessons(Lessons.query)
+    lessons_list = lessons_to_dict(ordered_lessons)
+
+    return render_template("schedule.html", lessons=lessons_list)
+
+
+@app.route("/lessons", methods=["GET"])
+def get_all_lessons():
+    """
+    Get all lessons.
+    ---
+    responses:
+      200:
+        description: A list of all lessons
+    """
+    # Отримання всіх уроків з бази даних
+    ordered_lessons = order_lessons(Lessons.query)
+    lessons_list = lessons_to_dict(ordered_lessons)
+
+    return jsonify(lessons_list), 200
+
+
+@app.route("/lessons/teacher/<teacher_name>", methods=["GET"])
+def get_lessons_by_teacher(teacher_name):
+    """
+    Get lessons by teacher.
+    ---
+    parameters:
+      - name: teacher_name
+        in: path
+        type: string
+        required: true
+        description: The name of the teacher
+    responses:
+      200:
+        description: A list of lessons taught by the specified teacher
+    """
+    # Отримання уроків за вчителем з бази даних
+    teacher_lessons = Lessons.query.filter_by(teacher=teacher_name).all()
+    ordered_teacher_lessons = order_lessons(teacher_lessons)
+    teacher_lessons_list = lessons_to_dict(ordered_teacher_lessons)
+
+    return jsonify(teacher_lessons_list), 200
+
+
+@app.route("/lessons/academic-group/<academic_group>", methods=["GET"])
+def get_lessons_by_academic_group(academic_group):
+    """
+    Get lessons by academic group.
+    ---
+    parameters:
+      - name: academic_group
+        in: path
+        type: string
+        required: true
+        description: The academic group
+    responses:
+      200:
+        description: A list of lessons for the specified academic group
+    """
+    # Отримання уроків за академічною групою з бази даних
+    group_lessons = Lessons.query.filter_by(academic_group=academic_group).all()
+    ordered_group_lessons = order_lessons(group_lessons)
+    group_lessons_list = lessons_to_dict(ordered_group_lessons)
+
+    return jsonify(group_lessons_list), 200
+
+
+@app.route("/lessons/add", methods=["POST"])
+def add_lesson():
+    """
+    Add a new lesson to the database.
+    ---
+    parameters:
+      - name: teacher
+        in: formData
+        type: string
+        required: true
+        description: The name of the teacher
+      - name: academic_group
+        in: formData
+        type: string
+        required: true
+        description: The academic group
+      - name: subject
+        in: formData
+        type: string
+        required: true
+        description: The subject of the lesson
+      - name: day
+        in: formData
+        type: string
+        required: true
+        description: The day of the week
+      - name: class_order
+        in: formData
+        type: integer
+        required: true
+        description: The order of the class
+    responses:
+      201:
+        description: Lesson added successfully
+      400:
+        description: Bad request, check your input data
+    """
+    data = request.form
+
+    try:
+        new_lesson = Lessons(
+            teacher=data["teacher"],
+            academic_group=data["academic_group"],
+            subject=data["subject"],
+            day=data["day"],
+            class_order=int(data["class_order"])
+        )
+        db.session.add(new_lesson)
+        db.session.commit()
+        return jsonify({"message": "Lesson added successfully"}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+
+# Add more endpoints for other filters as needed
+
+@app.route("/lessons/delete/<int:lesson_id>", methods=["DELETE"])
+def delete_lesson(lesson_id):
+    """
+    Delete a lesson by ID.
+    ---
+    parameters:
+      - name: lesson_id
+        in: path
+        type: integer
+        required: true
+        description: The ID of the lesson to delete
+    responses:
+      200:
+        description: Lesson deleted successfully
+      404:
+        description: Lesson not found
+    """
+    lesson = Lessons.query.get(lesson_id)
+
+    if lesson:
+        db.session.delete(lesson)
+        db.session.commit()
+        return jsonify({"message": "Lesson deleted successfully"}), 200
+    else:
+        return jsonify({"error": "Lesson not found"}), 404
+
+
+if __name__ == '__main__':
+    app.run(debug=True)

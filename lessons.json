@@ -1,0 +1,74 @@
+{
+  "lessons": [
+    {
+      "teacher": "Dr. Smith",
+      "academic_group": "FEP-25",
+      "subject": "Introduction to Programming",
+      "day": "Monday",
+      "class_order": 1
+    },
+    {
+      "teacher": "Prof. Johnson",
+      "academic_group": "FEP-23",
+      "subject": "Calculus I",
+      "day": "Monday",
+      "class_order": 2
+    },
+    {
+      "teacher": "Dr. White",
+      "academic_group": "FEP-21",
+      "subject": "Mechanics",
+      "day": "Tuesday",
+      "class_order": 1
+    },
+    {
+      "teacher": "Prof. Brown",
+      "academic_group": "FEP-23",
+      "subject": "Organic Chemistry",
+      "day": "Tuesday",
+      "class_order": 2
+    },
+    {
+      "teacher": "Dr. Smith",
+      "academic_group": "FEP-21",
+      "subject": "Introduction to Programming",
+      "day": "Wednesday",
+      "class_order": 1
+    },
+    {
+      "teacher": "Prof. Johnson",
+      "academic_group": "FEP-23",
+      "subject": "Linear Algebra",
+      "day": "Wednesday",
+      "class_order": 2
+    },
+    {
+      "teacher": "Dr. White",
+      "academic_group": "FEP-21",
+      "subject": "Mechanics",
+      "day": "Thursday",
+      "class_order": 1
+    },
+    {
+      "teacher": "Prof. Brown",
+      "academic_group": "FEP-23",
+      "subject": "Organic Chemistry",
+      "day": "Thursday",
+      "class_order": 2
+    },
+    {
+      "teacher": "Dr. Smith",
+      "academic_group": "FEP-21",
+      "subject": "Introduction to Programming",
+      "day": "Friday",
+      "class_order": 1
+    },
+    {
+      "teacher": "Prof. Johnson",
+      "academic_group": "FEP-23",
+      "subject": "Linear Algebra",
+      "day": "Friday",
+      "class_order": 2
+    }
+  ]
+}

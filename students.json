@@ -1,0 +1,34 @@
+{
+  "students": [
+    {
+      "student_name": "Іван",
+      "student_surname": "Мельник",
+      "group_id": 1
+    },
+    {
+      "student_name": "Петро",
+      "student_surname": "Мирний",
+      "group_id": 2
+    },
+    {
+      "student_name": "Денис",
+      "student_surname": "Григорійчук",
+      "group_id": 3
+    },
+    {
+      "student_name": "Тарас",
+      "student_surname": "Шевченко",
+      "group_id": 3
+    },
+    {
+      "student_name": "Григорій",
+      "student_surname": "Сковородв",
+      "group_id": 4
+    },
+    {
+      "student_name": "Леся",
+      "student_surname": "Українка",
+      "group_id": 5
+    }
+  ]
+}

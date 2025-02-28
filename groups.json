@@ -1,0 +1,29 @@
+{
+  "groups": [
+    {
+      "group_name": "FEP-21",
+      "starosta": "Leonardo",
+      "contact_starosta": "leonardo@lnu.edu.ua"
+    },
+    {
+      "group_name": "FEP-22",
+      "starosta": "Cristiano",
+      "contact_starosta": "cristiano@lnu.edu.ua"
+    },
+    {
+      "group_name": "FEP-23",
+      "starosta": "Neymar",
+      "contact_starosta": "neymar@lnu.edu.ua"
+    },
+    {
+      "group_name": "FEP-24",
+      "starosta": "Kylian",
+      "contact_starosta": "kylian@lnu.edu.ua"
+    },
+    {
+      "group_name": "FEP-25",
+      "starosta": "Diego",
+      "contact_starosta": "diego@lnu.edu.ua"
+    }
+  ]
+}
